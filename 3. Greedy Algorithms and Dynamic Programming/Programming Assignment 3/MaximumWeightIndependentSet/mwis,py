@@ -1,0 +1,92 @@
+DATA = 'mwis.txt'
+
+
+class MWIS:
+    def __init__(self):
+        self.number_vertices = 0
+        self.weights = {}
+        self.intermediate_mwis = []
+
+    def get_number_vertices(self):
+        return self.number_vertices
+
+    def get_weights(self):
+        return self.weights
+
+    def get_intermediate_mwis(self):
+        return self.intermediate_mwis
+
+    def get_vertex_weight(self, vertex):
+        weights = self.get_weights()
+        return weights[vertex]
+
+    def set_number_vertices(self, number):
+        self.number_vertices = number
+
+    def set_weights(self, weights):
+        self.weights = weights
+
+    def set_intermediate_mwis(self, mwis):
+        self.intermediate_mwis = mwis
+
+    def get_data(self, filename):
+        file = open(filename, "r")
+        file_list = file.readlines()
+
+        weights = {}
+
+        for i in range(0, len(file_list)):
+            if i == 0:
+                number_symbols = file_list[i]
+                self.set_number_vertices(int(number_symbols))
+
+            else:
+                vertex_index = i
+                vertex_weight = int(file_list[i])
+                weights[vertex_index] = vertex_weight
+
+        self.set_weights(weights)
+
+    def calculate(self):
+        intermediate_mwis = []
+
+        intermediate_mwis.append(0)
+        intermediate_mwis.append(self.get_vertex_weight(vertex=1))
+
+        for i in range(2, self.get_number_vertices()+1):
+            case1 = intermediate_mwis[i-1]
+            case2 = intermediate_mwis[i-2] + self.get_vertex_weight(vertex=i)
+            intermediate_mwis.append(max(case1, case2))
+
+        self.set_intermediate_mwis(intermediate_mwis)
+
+    def reconstruct_mwis(self):
+        intermediate_mwis = self.get_intermediate_mwis()
+        mwis = set()
+        i = self.get_number_vertices()
+
+        while i >= 1:
+            value1 = intermediate_mwis[i]
+            value2 = intermediate_mwis[i - 2] + self.get_vertex_weight(vertex=i)
+            if value1 > value2:
+                i -= 1
+            else:
+                mwis.add(i)
+                i -= 2
+        return mwis
+
+
+if __name__ == '__main__':
+    calculator = MWIS()
+    calculator.get_data(DATA)
+    calculator.calculate()
+    mwis = calculator.reconstruct_mwis()
+
+    test_set = [1,2,3,4,17,117,517,997]
+    answer = ''
+    for test_vertex in test_set:
+        if test_vertex in mwis:
+            answer = answer + '1'
+        else:
+            answer = answer + '0'
+    print(answer)
